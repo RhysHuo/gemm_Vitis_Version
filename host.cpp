@@ -10,7 +10,7 @@
 
 #define NUM_TESTS 1
 
-int* SN, SM, SP;
+int SN, SM, SP;
 
 static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
 {
@@ -438,9 +438,13 @@ int main(int argc, char* argv[]) {
     SM = atoi(argv[4]);
     SP = atoi(argv[5]);
     SN = atoi(argv[6]);
+    
+    int *N = &SN;
+    int *M = &SM;
+    int *P = &SP;
 
     int* begin = 0;
-    int* end = SN;
+    int* end = N;
 
     for (int i = 0; i < NUM_TESTS; i++) 
 	{
@@ -514,34 +518,65 @@ int main(int argc, char* argv[]) {
 
 
 
-    char* xclbinFilename = argv[1];
-
+    std::vector<cl::Device> devices;
     cl_int err;
     cl::Context context;
     cl::CommandQueue q;
     cl::Kernel krnl;
-    std::string binaryFile = argv[1];
+    cl::Program program;
+    std::vector<cl::Platform> platforms;
+    bool found_device = false;
 
-    // The get_xil_devices will return vector of Xilinx Devices
-    auto devices = xcl::get_xil_devices();
+    // traversing all Platforms To find Xilinx Platform and targeted
+    // Device in Xilinx Platform
+    cl::Platform::get(&platforms);
+    for (size_t i = 0; (i < platforms.size()) & (found_device == false); i++) {
+        cl::Platform platform = platforms[i];
+        std::string platformName = platform.getInfo<CL_PLATFORM_NAME>();
+        if (platformName == "Xilinx") {
+            devices.clear();
+            platform.getDevices(CL_DEVICE_TYPE_ACCELERATOR, &devices);
+            if (devices.size()) {
+                found_device = true;
+                break;
+            }
+        }
+    }
+    if (found_device == false) {
+        std::cout << "Error: Unable to find Target Device " << std::endl;
+        return EXIT_FAILURE;
+    }
 
-    auto fileBuf = xcl::find_binary_file(binaryFile);
+    std::cout << "INFO: Reading " << xclbinFilename << std::endl;
+    FILE* fp;
+    if ((fp = fopen(xclbinFilename.c_str(), "r")) == nullptr) {
+        printf("ERROR: %s xclbin not available please build\n", xclbinFilename.c_str());
+        exit(EXIT_FAILURE);
+    }
+    // Load xclbin
+    std::cout << "Loading: '" << xclbinFilename << "'\n";
+    std::ifstream bin_file(xclbinFilename, std::ifstream::binary);
+    bin_file.seekg(0, bin_file.end);
+    unsigned nb = bin_file.tellg();
+    bin_file.seekg(0, bin_file.beg);
+    char* buf = new char[nb];
+    bin_file.read(buf, nb);
 
-    xcl::Program::Binaries bins({fileBuf.data(), fileBuf.size()});
+    // Creating Program from Binary File
+    cl::Program::Binaries bins;
+    bins.push_back({buf, nb});
     bool valid_device = false;
     for (unsigned int i = 0; i < devices.size(); i++) {
         auto device = devices[i];
         // Creating Context and Command Queue for selected Device
         OCL_CHECK(err, context = cl::Context(device, nullptr, nullptr, nullptr, &err));
         OCL_CHECK(err, q = cl::CommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err));
-
         std::cout << "Trying to program device[" << i << "]: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
         cl::Program program(context, {device}, bins, nullptr, &err);
         if (err != CL_SUCCESS) {
             std::cout << "Failed to program device[" << i << "] with xclbin file!\n";
         } else {
             std::cout << "Device[" << i << "]: program successful!\n";
-            // Kernel
             OCL_CHECK(err, krnl = cl::Kernel(program, "kernelMatrixmult", &err));
             valid_device = true;
             break; // we break because we found a valid device
@@ -551,28 +586,21 @@ int main(int argc, char* argv[]) {
         std::cout << "Failed to program any device found, exit!\n";
         exit(EXIT_FAILURE);
     }
-
+    /*
     cl_mem_ext_ptr_t host_buffer_ext;
     host_buffer_ext.flags = XCL_MEM_EXT_HOST_ONLY;
     host_buffer_ext.obj = nullptr;
     host_buffer_ext.param = 0;
+    */
 
-    OCL_CHECK(err, cl::Buffer buffer_ternary(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(ap_uint<2>),
-                                          &host_buffer_ext, &err));
-    OCL_CHECK(err, cl::Buffer buffer_array_a(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, SN * SM * sizeof(DTYPE),
-                                          &host_buffer_ext, &err));
-    OCL_CHECK(err, cl::Buffer buffer_array_b(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, SM * SP * sizeof(DTYPE),
-                                         &host_buffer_ext, &err));
-    OCL_CHECK(err, cl::Buffer buffer_SM(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int),
-                                         &host_buffer_ext, &err));
-    OCL_CHECK(err, cl::Buffer buffer_SP(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int),
-                                         &host_buffer_ext, &err));
-    OCL_CHECK(err, cl::Buffer buffer_begin(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int),
-                                         &host_buffer_ext, &err));
-    OCL_CHECK(err, cl::Buffer buffer_end(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int),
-                                         &host_buffer_ext, &err));
-    OCL_CHECK(err, cl::Buffer buffer_array_c(context, CL_MEM_WRITE_ONLY | CL_MEM_EXT_PTR_XILINX, SN * SP * sizeof(DTYPE_OUT),
-                                         &host_buffer_ext, &err));
+    OCL_CHECK(err, cl::Buffer buffer_ternary(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(ap_uint<2>), NULL, &err));
+    OCL_CHECK(err, cl::Buffer buffer_array_a(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, SN * SM * sizeof(DTYPE), NULL, &err));
+    OCL_CHECK(err, cl::Buffer buffer_array_b(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, SM * SP * sizeof(DTYPE), NULL, &err));
+    OCL_CHECK(err, cl::Buffer buffer_SM(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int), NULL, &err));
+    OCL_CHECK(err, cl::Buffer buffer_SP(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int), NULL, &err));
+    OCL_CHECK(err, cl::Buffer buffer_begin(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int), NULL, &err));
+    OCL_CHECK(err, cl::Buffer buffer_end(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(int), NULL, &err));
+    OCL_CHECK(err, cl::Buffer buffer_array_c(context, CL_MEM_WRITE_ONLY | CL_MEM_EXT_PTR_XILINX, SN * SP * sizeof(DTYPE_OUT), NULL, &err));
 
     // Set the kernal argument
     int narg = 0;
@@ -596,22 +624,14 @@ int main(int argc, char* argv[]) {
     int end;
     */
 
-    OCL_CHECK(err, ternary = (ap_uint<2>*)q.enqueueMapBuffer(buffer_ternary, CL_TRUE, CL_MAP_WRITE, 0, sizeof(ap_uint<2>), nullptr,
-                                                        nullptr, &err));
-    OCL_CHECK(err, array_a = (DTYPE*)q.enqueueMapBuffer(buffer_array_a, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr,
-                                                        nullptr, &err));
-    OCL_CHECK(err, array_b = (DTYPE*)q.enqueueMapBuffer(buffer_array_b, CL_TRUE, CL_MAP_WRITE, 0, SM * SP * sizeof(DTYPE), nullptr,
-                                                        nullptr, &err));
-    OCL_CHECK(err, SM = (int*)q.enqueueMapBuffer(buffer_SM, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr,
-                                               nullptr, &err));
-    OCL_CHECK(err, SP = (int*)q.enqueueMapBuffer(buffer_SP, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr,
-                                               nullptr, &err));
-    OCL_CHECK(err, begin = (int*)q.enqueueMapBuffer(buffer_begin, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr,
-                                                   nullptr, &err));
-    OCL_CHECK(err, end = (int*)q.enqueueMapBuffer(buffer_end, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr,
-                                                 nullptr, &err));
-    OCL_CHECK(err, array_c = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c, CL_TRUE, CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr,
-                                                            nullptr, &err));
+    OCL_CHECK(err, ternary = (ap_uint<2>*)q.enqueueMapBuffer(buffer_ternary, CL_TRUE, CL_MAP_WRITE, 0, sizeof(ap_uint<2>), nullptr, nullptr, &err));
+    OCL_CHECK(err, array_a = (DTYPE*)q.enqueueMapBuffer(buffer_array_a, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
+    OCL_CHECK(err, array_b = (DTYPE*)q.enqueueMapBuffer(buffer_array_b, CL_TRUE, CL_MAP_WRITE, 0, SM * SP * sizeof(DTYPE), nullptr, nullptr, &err));
+    OCL_CHECK(err, M = (int*)q.enqueueMapBuffer(buffer_SM, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr, nullptr, &err));
+    OCL_CHECK(err, P = (int*)q.enqueueMapBuffer(buffer_SP, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr, nullptr, &err));
+    OCL_CHECK(err, begin = (int*)q.enqueueMapBuffer(buffer_begin, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr, nullptr, &err));
+    OCL_CHECK(err, end = (int*)q.enqueueMapBuffer(buffer_end, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr, nullptr, &err));
+    OCL_CHECK(err, array_c = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c, CL_TRUE, CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
 
     //q.finish();
 
@@ -662,8 +682,8 @@ int main(int argc, char* argv[]) {
     q.enqueueUnmapMemObject(buffer_ternary, ternary);
     q.enqueueUnmapMemObject(buffer_array_a, array_a);
     q.enqueueUnmapMemObject(buffer_array_b, array_b);
-    q.enqueueUnmapMemObject(buffer_SM, SM);
-    q.enqueueUnmapMemObject(buffer_SP, SP);
+    q.enqueueUnmapMemObject(buffer_SM, M);
+    q.enqueueUnmapMemObject(buffer_SP, P);
     q.enqueueUnmapMemObject(buffer_begin, begin);
     q.enqueueUnmapMemObject(buffer_end, end);
     q.enqueueUnmapMemObject(buffer_array_c, array_c);
