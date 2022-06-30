@@ -429,8 +429,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::ifstream& myFile(argv[2]);
-    ap_uint<2>* ternary = atoi(argv[3]);
+    std::ifstream myFile(argv[2]);
+    ap_uint<2> S_ternary = atoi(argv[3]);
+    ap_uint<2>* ternary = &S_ternary;
     DTYPE* array_a;
     DTYPE* array_b;
     DTYPE_OUT* array_c;
@@ -449,11 +450,11 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < NUM_TESTS; i++) 
 	{
 
-		if (ternary==0)
+		if (S_ternary==0)
 		{
 			load_arrays_byte(array_a,myFile);
 		}
-		else if (ternary==1)
+		else if (S_ternary==1)
 		{
 			load_arrays_tern(array_a,myFile);
 		}
@@ -517,7 +518,7 @@ int main(int argc, char* argv[]) {
 	}
 
 
-
+    std::string xclbinFilename = argv[1];
     std::vector<cl::Device> devices;
     cl_int err;
     cl::Context context;
@@ -649,11 +650,11 @@ int main(int argc, char* argv[]) {
     // Compare the results of the Device to the simulation
 
     //bool match = true;
-    if (ternary==0)
+    if (S_ternary==0)
     {
         mmult_golden_byte(array_a, array_b, array_c_sw);
     }
-    else if (ternary==1)
+    else if (S_ternary==1)
     {
         mmult_golden_ternary(array_a, array_b, array_c_sw);
     }
