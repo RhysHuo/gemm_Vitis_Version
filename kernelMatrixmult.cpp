@@ -73,16 +73,16 @@ void mxv(ap_uint<2> ternary, int M, DTYPE *A, DTYPE_OUT* C, DTYPE B[B_HEIGHT][B_
 }
 
 
-int mmult_accel(ap_uint<2> ternary, int M, DTYPE* A, DTYPE B[B_HEIGHT][B_WIDTH_BLOCK], DTYPE_OUT* C)
+void mmult_accel(ap_uint<2> ternary, int M, DTYPE* A, DTYPE B[B_HEIGHT][B_WIDTH_BLOCK], DTYPE_OUT* C)
 {
 	for (int p = 0; p < A_HEIGHT_BLOCK; p+=STEP) {
 		mxv(ternary, M, A+p*M, C+p*C_WIDTH_BLOCK, B);
 	}
-	return 0;
+	//return 0;
 }
 
 
-int mmult_top(ap_uint<2> ternary, int N, int M, int P, DTYPE* A, DTYPE* B, DTYPE_OUT* C)
+void mmult_top(ap_uint<2> ternary, int N, int M, int P, DTYPE* A, DTYPE* B, DTYPE_OUT* C)
 {
 	DTYPE A_accel[A_WIDTH], B_accel[B_HEIGHT][B_WIDTH_BLOCK];
 	DTYPE_OUT C_accel[B_WIDTH_BLOCK];
@@ -119,7 +119,7 @@ int mmult_top(ap_uint<2> ternary, int N, int M, int P, DTYPE* A, DTYPE* B, DTYPE
 	}
 }
 
-int kernelMatrixmult1(
+void kernelMatrixmult1(
 ap_uint<2> ternary,
 DTYPE* array_a,
 DTYPE* array_b,
