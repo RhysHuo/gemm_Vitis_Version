@@ -2,7 +2,7 @@
 #define KERNELMATRIXMULT_H_
 #include "matrix_mult.h"
 
-int kernelMatrixmult1(
+void kernelMatrixmult1(
 ap_uint<2> ternary,
 DTYPE *array_a,
 DTYPE *array_b,
