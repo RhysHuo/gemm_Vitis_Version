@@ -119,7 +119,7 @@ void mmult_top(ap_uint<2> ternary, int N, int M, int P, DTYPE* A, DTYPE* B, DTYP
 	}
 }
 
-void kernelMatrixmult1(
+void kernelMatrixmult(
 ap_uint<2> ternary,
 DTYPE* array_a,
 DTYPE* array_b,
