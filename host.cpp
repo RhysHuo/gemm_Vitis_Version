@@ -4,6 +4,7 @@
 //#include <sys/time.h>
 #include <algorithm>
 
+#include <CL/cl.h>
 #include "xcl2.hpp"
 #include "matrix_mult.h"
 
