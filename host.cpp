@@ -14,7 +14,7 @@ int SN, SM, SP;
 
 static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
 {
-    for (int i = 0; i < SM; i++) {
+    for (int i = 0; i < SM; i++) {    
         for (int j = 0; j < SP; j++) {
             //B[i * P + j] = DTYPE(rand() % (M * P));
             //B[i * P + j] =  DTYPE(M * P);
@@ -26,6 +26,7 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
     }
     std::cout << "boundary (out of the first loop)"<< B[(SM - 1) * SP + (SP - 1)] << std::endl;
     for (int i = 0; i < SN; i++) {
+	    std::cout << "i "<< i << std::endl;
         for (int j = 0; j < SP; j++) {
 			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
 			C_sw[i * SP + j] = 0x0;
