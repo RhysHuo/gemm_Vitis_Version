@@ -19,7 +19,7 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
             //B[i * P + j] = DTYPE(rand() % (M * P));
             //B[i * P + j] =  DTYPE(M * P);
         	B[i * SP + j] =  0x01;
-        	// std::cout << "B "<< i * P + j << " " << B[i * P + j] << std::endl;
+        	std::cout << "B "<< i * SP + j << " " << B[i * SP + j] << std::endl;
         }
     }
     for (int i = 0; i < SN; i++) {
@@ -468,7 +468,7 @@ int main(int argc, char* argv[]) {
 			load_arrays_quad(array_a,myFile);
 		}
 	    
-	    	std::cout << "Complete to load_arrays_byte " << std::endl;
+	    	std::cout << "Complete to load_arrays " << std::endl;
 
 		//arraytocsr(A);
 		//double start_time, end_time, execution_time;
@@ -477,7 +477,7 @@ int main(int argc, char* argv[]) {
 
 		
 		//start_time = getTimestamp();
-		init_arrays(array_b, array_c, array_c);
+		init_arrays(array_b, array_c_sw, array_c);
 	    
 		std::cout << "Complete to init_arrays " << std::endl;
 
