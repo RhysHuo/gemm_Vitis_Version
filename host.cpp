@@ -27,7 +27,8 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
     std::cout << "boundary (out of the first loop)"<< B[(SM - 1) * SP + (SP - 1)] << std::endl;
     for (int i = 0; i < SN; i++) {
         for (int j = 0; j < SP; j++) {
-			C_sw[i * SP + j] = 0x00;
+			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
+			C_sw[i * SP + j] = 0x0;
 			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
 			C[i * SP + j] = 0;
 		//std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
