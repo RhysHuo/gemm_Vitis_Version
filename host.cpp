@@ -561,7 +561,7 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; (i < platforms.size()) & (found_device == false); i++) {
         cl::Platform platform = platforms[i];
         std::string platformName = platform.getInfo<CL_PLATFORM_NAME>();
-        if (platformName == "xilinx_u250_gen3x16_xdma_4_1_202210_1") {
+        if (platformName == "Xilinx") {
             devices.clear();
             platform.getDevices(CL_DEVICE_TYPE_ACCELERATOR, &devices);
             if (devices.size()) {
