@@ -28,6 +28,8 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
     for (int i = 0; i < SN; i++) {
 	    std::cout << "i "<< i << std::endl;
         for (int j = 0; j < SP; j++) {
+		std::cout << "j "<< j << std::endl;
+			std::cout << "sizeof "<< sizeof(C) << std::endl;
 			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
 			std::cout << "assigning" << std::endl;
 			C_sw[i * SP + j] = 0;
