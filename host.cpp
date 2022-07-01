@@ -251,7 +251,7 @@ static void load_arrays_byte(DTYPE *A,std::ifstream& myFile)
 	        //std::cout << i <<" "<< j << " " << array_val << " " << A[i * N + j] << std::endl;
 	        A[i * SM + j] = array_val;
 	        val_count++;
-	        std::cout << i <<" "<< j << " " << array_val << " " << A[i * N + j] << std::endl;
+	        std::cout << i <<" "<< j << " " << array_val << " " << A[i * SM + j] << std::endl;
 
 	    }
     }
