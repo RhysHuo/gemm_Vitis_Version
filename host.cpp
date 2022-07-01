@@ -24,12 +24,15 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
         	std::cout << "B "<< i * SP + j << " " << B[i * SP + j] << std::endl;
         }
     }
+    std::cout << "boundary (out of the first loop)"<< B[(SM - 1) * SP + (SP - 1)] << std::endl;
     for (int i = 0; i < SN; i++) {
         for (int j = 0; j < SP; j++) {
 			C_sw[i * SP + j] = 0;
 			C[i * SP + j] = 0;
 		}
 	}
+    std::cout << "boundary (out of the second loop)"<< C_sw[(SN - 1) * SP + (SP - 1)] << std::endl;
+    std::cout << "boundary (out of the second loop)"<< C[(SN - 1) * SP + (SP - 1)] << std::endl;
 }
 
 static void load_arrays_quad(DTYPE *A, std::ifstream& myFile)
