@@ -18,6 +18,7 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
         for (int j = 0; j < SP; j++) {
             //B[i * P + j] = DTYPE(rand() % (M * P));
             //B[i * P + j] =  DTYPE(M * P);
+		std::cout << "sizeof "<< sizeof(B) << std::endl;
         	B[i * SP + j] =  0x01;
         	std::cout << "B "<< i * SP + j << " " << B[i * SP + j] << std::endl;
         }
