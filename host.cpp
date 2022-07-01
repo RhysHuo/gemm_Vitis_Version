@@ -538,10 +538,11 @@ int main(int argc, char* argv[]) {
         if (result_check(array_c, array_c_sw))
             return 1;
         
-        */
+        
 
     
 	}
+	*/
 
 
     std::string xclbinFilename = argv[1];
