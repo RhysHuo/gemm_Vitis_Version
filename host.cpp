@@ -441,7 +441,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Usage: " << argv[0] << " <xclbin>" << " myFile" << " ternary" << " SM" << " SP" << " SN" << std::endl;
         return EXIT_FAILURE;
     }
-
+    
+	/*
     std::ifstream myFile(argv[2]);
     ap_uint<2> S_ternary = atoi(argv[3]);
     ap_uint<2>* ternary = &S_ternary;
@@ -619,6 +620,10 @@ int main(int argc, char* argv[]) {
     host_buffer_ext.param = 0;
     */
 
+    SM = atoi(argv[4]);
+    SP = atoi(argv[5]);
+    SN = atoi(argv[6]);
+
     OCL_CHECK(err, cl::Buffer buffer_ternary(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, sizeof(ap_uint<2>), NULL, &err));
     OCL_CHECK(err, cl::Buffer buffer_array_a(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, SN * SM * sizeof(DTYPE), NULL, &err));
     OCL_CHECK(err, cl::Buffer buffer_array_b(context, CL_MEM_READ_ONLY | CL_MEM_EXT_PTR_XILINX, SM * SP * sizeof(DTYPE), NULL, &err));
@@ -649,6 +654,28 @@ int main(int argc, char* argv[]) {
     int begin;
     int end;
     */
+    std::ifstream myFile(argv[2]);
+    ap_uint<2> S_ternary = atoi(argv[3]);
+    ap_uint<2>* ternary = &S_ternary;
+    DTYPE* array_a;
+    DTYPE* array_b;
+    DTYPE_OUT* array_c;
+    DTYPE_OUT* array_c_sw;
+    //SM = atoi(argv[4]);
+    //SP = atoi(argv[5]);
+    //SN = atoi(argv[6]);
+    
+    int *N = &SN;
+    int *M = &SM;
+    int *P = &SP;
+	
+    std::cout << "Complete to assign a value to N, M and P : " << "SN = " << argv[6] << " SM = " << argv[4] << " SP = " << argv[5] << std::endl;
+	
+    int S_begin = 0;
+    int* begin = &S_begin;
+    int* end = N;
+	
+    std::cout << "Complete to assign a value to begin and end " << std::endl;
 
     OCL_CHECK(err, ternary = (ap_uint<2>*)q.enqueueMapBuffer(buffer_ternary, CL_TRUE, CL_MAP_WRITE, 0, sizeof(ap_uint<2>), nullptr, nullptr, &err));
     OCL_CHECK(err, array_a = (DTYPE*)q.enqueueMapBuffer(buffer_array_a, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
@@ -658,6 +685,29 @@ int main(int argc, char* argv[]) {
     OCL_CHECK(err, begin = (int*)q.enqueueMapBuffer(buffer_begin, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr, nullptr, &err));
     OCL_CHECK(err, end = (int*)q.enqueueMapBuffer(buffer_end, CL_TRUE, CL_MAP_WRITE, 0, sizeof(int), nullptr, nullptr, &err));
     OCL_CHECK(err, array_c = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c, CL_TRUE, CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
+
+    init_arrays(array_b, array_c_sw, array_c);
+	    
+    std::cout << "Complete to init_arrays " << std::endl;
+
+    for (int i = 0; i < NUM_TESTS; i++) 
+	{
+
+		if (S_ternary==0)
+		{
+			load_arrays_byte(array_a,myFile);
+		}
+		else if (S_ternary==1)
+		{
+			load_arrays_tern(array_a,myFile);
+		}
+		else
+		{
+			load_arrays_quad(array_a,myFile);
+		}
+	    
+	    	std::cout << "Complete to load_arrays " << std::endl;
+    }
 
     //q.finish();
 
