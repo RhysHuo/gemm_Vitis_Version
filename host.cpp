@@ -18,9 +18,9 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
         for (int j = 0; j < SP; j++) {
             //B[i * P + j] = DTYPE(rand() % (M * P));
             //B[i * P + j] =  DTYPE(M * P);
-		std::cout << "sizeof "<< sizeof(B) << std::endl;
+		//std::cout << "sizeof "<< sizeof(B) << std::endl;
         	B[i * SP + j] =  0x01;
-		std::cout << "boundary "<< B[(SM - 1) * SP + (SP - 1)] << std::endl;
+		//std::cout << "boundary "<< B[(SM - 1) * SP + (SP - 1)] << std::endl;
         	std::cout << "B "<< i * SP + j << " " << B[i * SP + j] << std::endl;
         }
     }
@@ -29,7 +29,8 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
 	    std::cout << "i "<< i << std::endl;
         for (int j = 0; j < SP; j++) {
 			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
-			C_sw[i * SP + j] = 0x0;
+			std::cout << "assigning" << std::endl;
+			C_sw[i * SP + j] = 0;
 			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
 			C[i * SP + j] = 0;
 		//std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
