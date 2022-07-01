@@ -142,7 +142,7 @@ static void load_arrays_quad(DTYPE *A, std::ifstream& myFile)
 	    }
     }
 
-    std::cout << "Val count " << val_count << std::endl;
+    std::cout << "(QUAD) Val count " << val_count << std::endl;
 }
 
 
@@ -205,7 +205,7 @@ static void load_arrays_tern(DTYPE *A,std::ifstream& myFile)
 	    }
     }
 
-    std::cout << "Val count " << val_count << std::endl;
+    std::cout << "(TERN) Val count " << val_count << std::endl;
 }
 
 
@@ -256,7 +256,7 @@ static void load_arrays_byte(DTYPE *A,std::ifstream& myFile)
 	    }
     }
 
-    std::cout << "Val count " << val_count << std::endl;
+    std::cout << "(BYTE) Val count " << val_count << std::endl;
 
 }
 
@@ -425,7 +425,7 @@ void arraytocsr(DTYPE *V)
 
 int main(int argc, char* argv[]) {
     if (argc != 7) {
-        //std::cout << "Usage: " << argv[0] << " <xclbin>" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <xclbin>" << "myFile" << "ternary" << "SM" << "SP" << "SN" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -443,9 +443,14 @@ int main(int argc, char* argv[]) {
     int *N = &SN;
     int *M = &SM;
     int *P = &SP;
-
-    int* begin = 0;
+	
+    std::cout << "Complete to assign a value to N, M and P : " << "SN = " << argv[6] << " SM = " << argv[4] << " SP = " << argv[5] << std::endl;
+	
+    int S_begin = 0;
+    int* begin = &S_begin;
     int* end = N;
+	
+    std::cout << "Complete to assign a value to begin and end " << std::endl;
 
     for (int i = 0; i < NUM_TESTS; i++) 
 	{
@@ -462,16 +467,19 @@ int main(int argc, char* argv[]) {
 		{
 			load_arrays_quad(array_a,myFile);
 		}
+	    
+	    	std::cout << "Complete to load_arrays_byte " << std::endl;
 
 		//arraytocsr(A);
 		//double start_time, end_time, execution_time;
 
 		//======================ONLY CPU ==========================================
 
-
+		
 		//start_time = getTimestamp();
 		init_arrays(array_b, array_c, array_c);
-
+	    
+		std::cout << "Complete to init_arrays " << std::endl;
 
 
 
@@ -648,7 +656,8 @@ int main(int argc, char* argv[]) {
     q.finish();
 
     // Compare the results of the Device to the simulation
-
+    std::cout << "Start to mmult_golden " << std::endl;
+	
     //bool match = true;
     if (S_ternary==0)
     {
@@ -662,6 +671,8 @@ int main(int argc, char* argv[]) {
     {
         mmult_golden_quad(array_a, array_b, array_c_sw);
     }
+	
+    std::cout << "Complete to mmult_golden " << std::endl;
 
     if (result_check(array_c, array_c_sw))
         return 1;
