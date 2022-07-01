@@ -251,7 +251,7 @@ static void load_arrays_byte(DTYPE *A,std::ifstream& myFile)
 	        //std::cout << i <<" "<< j << " " << array_val << " " << A[i * N + j] << std::endl;
 	        A[i * SM + j] = array_val;
 	        val_count++;
-	        //std::cout << i <<" "<< j << " " << array_val << " " << A[i * N + j] << std::endl;
+	        std::cout << i <<" "<< j << " " << array_val << " " << A[i * N + j] << std::endl;
 
 	    }
     }
@@ -425,7 +425,7 @@ void arraytocsr(DTYPE *V)
 
 int main(int argc, char* argv[]) {
     if (argc != 7) {
-        std::cout << "Usage: " << argv[0] << " <xclbin>" << "myFile" << "ternary" << "SM" << "SP" << "SN" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <xclbin>" << " myFile" << " ternary" << " SM" << " SP" << " SN" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -451,6 +451,10 @@ int main(int argc, char* argv[]) {
     int* end = N;
 	
     std::cout << "Complete to assign a value to begin and end " << std::endl;
+	
+    init_arrays(array_b, array_c_sw, array_c);
+	    
+    std::cout << "Complete to init_arrays " << std::endl;
 
     for (int i = 0; i < NUM_TESTS; i++) 
 	{
@@ -477,9 +481,9 @@ int main(int argc, char* argv[]) {
 
 		
 		//start_time = getTimestamp();
-		init_arrays(array_b, array_c_sw, array_c);
+		//init_arrays(array_b, array_c_sw, array_c);
 	    
-		std::cout << "Complete to init_arrays " << std::endl;
+		//std::cout << "Complete to init_arrays " << std::endl;
 
 
 
