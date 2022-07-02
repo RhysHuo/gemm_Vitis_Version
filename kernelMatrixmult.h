@@ -2,6 +2,8 @@
 #define KERNELMATRIXMULT_H_
 #include "matrix_mult.h"
 
+extern "C"{
+
 void kernelMatrixmult(
 ap_uint<2> ternary,
 DTYPE *array_a,
@@ -11,6 +13,7 @@ int M,
 int P,
 int begin,
 int end);
+}
 
 
 #endif 
