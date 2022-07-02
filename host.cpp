@@ -602,12 +602,12 @@ int main(int argc, char* argv[]) {
         OCL_CHECK(err, q = cl::CommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err));
         std::cout << "Trying to program device[" << i << "]: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
 	    
-	try {
+	//try {
             program = cl::Program(context, {device}, bins, NULL, &err);
-        }
-        catch (cl::Error &e) {
-            continue;
-        }
+        //}
+        //catch (cl::Error &e) {
+            //continue;
+        //}
 	    
         //cl::Program program(context, {device}, bins, nullptr, &err);
 	    
