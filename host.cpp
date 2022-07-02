@@ -6,6 +6,7 @@
 
 #include "xcl2.hpp"
 #include <CL/cl.h>
+#include <CL/cl2.hpp>
 #include "matrix_mult.h"
 
 #define NUM_TESTS 1
