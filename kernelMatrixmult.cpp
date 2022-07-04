@@ -134,8 +134,9 @@ int end)
     int line_count = end-begin;
     DTYPE *array_temp_a = array_a + begin*M;
     DTYPE *array_temp_b = array_b;
-    DTYPE_OUT *array_temp_c = array_c + begin*M;
+    //DTYPE_OUT *array_temp_c = array_c + begin*M;
     //mmult_top1(array_temp_a, array_temp_b, array_temp_c, line_count);
     // #pragma SDS resource(1)
-    mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_temp_c);
+    //mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_temp_c);
+    mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_c);
 }
