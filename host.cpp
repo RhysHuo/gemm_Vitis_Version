@@ -24,19 +24,12 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
     }
     for (int i = 0; i < SN; i++) {
         for (int j = 0; j < SP; j++) {
-			std::cout << "j "<< j << std::endl;
-			std::cout << "sizeof "<< sizeof(C) << std::endl;
-			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
-			std::cout << "assigning" << std::endl;
 			C_sw[i * SP + j] = 0;
-			std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
 			C[i * SP + j] = 0;
-		//std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
+		std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
 		std::cout << "C "<< i * SP + j << " " << C[i * SP + j] << std::endl;
 		}
 	}
-    std::cout << "boundary (out of the second loop)"<< C_sw[(SN - 1) * SP + (SP - 1)] << std::endl;
-    std::cout << "boundary (out of the second loop)"<< C[(SN - 1) * SP + (SP - 1)] << std::endl;
 }
 
 static void load_arrays_quad(DTYPE *A, std::ifstream& myFile)
