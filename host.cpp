@@ -219,7 +219,7 @@ static void load_arrays_byte(DTYPE *A,std::ifstream& myFile)
 	        }
 	        A[i * SM + j] = array_val;
 	        val_count++;
-	        std::cout << i <<" "<< j << A[i * SM + j] << std::endl;
+	        std::cout << i << " " << j << " " << A[i * SM + j] << std::endl;
 	    }
     }
     std::cout << "(BYTE) Val count " << val_count << std::endl;
