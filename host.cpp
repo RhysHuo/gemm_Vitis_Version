@@ -529,7 +529,7 @@ int main(int argc, char* argv[]) {
 	// the Alveo Data Center accelerator card global memory and will take care of 
 	// migrating the buffer back to the host for us. This is a coding style choice you must make.
 
-    //OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_c}, CL_MIGRATE_MEM_OBJECT_HOST));
+    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_c}, CL_MIGRATE_MEM_OBJECT_HOST));
     
     q.finish();
 
