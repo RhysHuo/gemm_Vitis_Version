@@ -151,6 +151,7 @@ int end)
     // #pragma SDS resource(1)
     //mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_temp_c);
 	mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_c);
+	std::cout << " kernelMatrixmult has completed " << std::endl;
 
 }
 
