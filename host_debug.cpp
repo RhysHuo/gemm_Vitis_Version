@@ -373,6 +373,76 @@ int main(int argc, char* argv[]) {
         std::cout << "Usage: " << argv[0] << " <xclbin>" << " myFile" << " ternary" << " SM" << " SP" << " SN" << std::endl;
         return EXIT_FAILURE;
     }
+	
+	std::string xclbinFilename = argv[1];
+    std::vector<cl::Device> devices;
+    cl_int err;
+    cl::Context context;
+    cl::CommandQueue q;
+    cl::Kernel krnl;
+    cl::Program program;
+    std::vector<cl::Platform> platforms;
+    bool found_device = false;
+
+    // traversing all Platforms To find Xilinx Platform and targeted
+    // Device in Xilinx Platform
+    cl::Platform::get(&platforms);
+    for (size_t i = 0; (i < platforms.size()) & (found_device == false); i++) {
+        cl::Platform platform = platforms[i];
+        std::string platformName = platform.getInfo<CL_PLATFORM_NAME>();
+        if (platformName == "Xilinx") {
+            devices.clear();
+            platform.getDevices(CL_DEVICE_TYPE_ACCELERATOR, &devices);
+            if (devices.size()) {
+                found_device = true;
+                break;
+            }
+        }
+    }
+    if (found_device == false) {
+        std::cout << "Error: Unable to find Target Device " << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << "INFO: Reading " << xclbinFilename << std::endl;
+    FILE* fp;
+    if ((fp = fopen(xclbinFilename.c_str(), "r")) == nullptr) {
+        printf("ERROR: %s xclbin not available please build\n", xclbinFilename.c_str());
+        exit(EXIT_FAILURE);
+    }
+    // Load xclbin
+    std::cout << "Loading: '" << xclbinFilename << "'\n";
+    std::ifstream bin_file(xclbinFilename, std::ifstream::binary);
+    bin_file.seekg(0, bin_file.end);
+    unsigned nb = bin_file.tellg();
+    bin_file.seekg(0, bin_file.beg);
+    char* buf = new char[nb];
+    bin_file.read(buf, nb);
+
+    // Creating Program from Binary File
+    cl::Program::Binaries bins;
+    bins.push_back({buf, nb});
+    bool valid_device = false;
+    for (unsigned int i = 0; i < devices.size(); i++) {
+        auto device = devices[i];
+        // Creating Context and Command Queue for selected Device
+        OCL_CHECK(err, context = cl::Context(device, nullptr, nullptr, nullptr, &err));
+        OCL_CHECK(err, q = cl::CommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err));
+        std::cout << "Trying to program device[" << i << "]: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+        program = cl::Program(context, {device}, bins, NULL, &err);
+        if (err != CL_SUCCESS) {
+            std::cout << "Failed to program device[" << i << "] with xclbin file!\n";
+        } else {
+            std::cout << "Device[" << i << "]: program successful!\n";
+            OCL_CHECK(err, krnl = cl::Kernel(program, "kernelMatrixmult", &err));
+            valid_device = true;
+            break; // we break because we found a valid device
+        }
+    }
+    if (!valid_device) {
+        std::cout << "Failed to program any device found, exit!\n";
+        exit(EXIT_FAILURE);
+    }
 
 	SM = atoi(argv[4]);
     SP = atoi(argv[5]);
