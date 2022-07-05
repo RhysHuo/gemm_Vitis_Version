@@ -112,7 +112,7 @@ void mmult_top(ap_uint<2> ternary, int N, int M, int P, DTYPE* A, DTYPE* B, DTYP
             for (int i = 0; i < C_HEIGHT_BLOCK; i++) {
                 for (int j = 0; j < C_WIDTH_BLOCK; j++) {
                     C[(i+A_index*A_HEIGHT_BLOCK)*P+j+B_index*B_WIDTH_BLOCK] = C_accel[i*C_WIDTH_BLOCK+j];
-                    //std::cout << "C is " << C[(i+A_index*A_HEIGHT_BLOCK)*C_WIDTH+j+B_index*B_WIDTH_BLOCK] << std::endl;
+                    //std::cout << "C is " << C[(i+A_index*A_HEIGHT_BLOCK)*P+j+B_index*B_WIDTH_BLOCK] << std::endl;
                 }
             }
 	    }
@@ -138,5 +138,7 @@ int end)
     //mmult_top1(array_temp_a, array_temp_b, array_temp_c, line_count);
     // #pragma SDS resource(1)
     //mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_temp_c);
-    mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_c);
+	mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_c);
+	//std::cout << " kernelMatrixmult has completed " << std::endl;
+
 }
