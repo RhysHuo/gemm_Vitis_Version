@@ -9,7 +9,7 @@
 #include <CL/cl2.hpp>
 #include "matrix_mult.h"
 
-//2022.07.03 19:21
+//2022.07.05 13:36
 
 #define NUM_TESTS 1
 
