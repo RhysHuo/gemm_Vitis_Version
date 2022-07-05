@@ -3,6 +3,8 @@
 #include <string.h>
 #include "kernelMatrixmult.h"
 
+//2022.07.05 13:36
+
 typedef unsigned long u32;
 
 const int BLOCK=B_WIDTH_BLOCK;   //BLOCK should be less than B_WIDTH_BLOCK
