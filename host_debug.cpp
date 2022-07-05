@@ -124,7 +124,7 @@ void mmult_top(ap_uint<2> ternary, int N, int M, int P, DTYPE* A, DTYPE* B, DTYP
             for (int i = 0; i < C_HEIGHT_BLOCK; i++) {
                 for (int j = 0; j < C_WIDTH_BLOCK; j++) {
                     C[(i+A_index*A_HEIGHT_BLOCK)*P+j+B_index*B_WIDTH_BLOCK] = C_accel[i*C_WIDTH_BLOCK+j];
-                    //std::cout << "C is " << C[(i+A_index*A_HEIGHT_BLOCK)*C_WIDTH+j+B_index*B_WIDTH_BLOCK] << std::endl;
+                    //std::cout << "C is " << C[(i+A_index*A_HEIGHT_BLOCK)*P+j+B_index*B_WIDTH_BLOCK] << std::endl;
                 }
             }
 	    }
@@ -151,7 +151,7 @@ int end)
     // #pragma SDS resource(1)
     //mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_temp_c);
 	mmult_top(ternary, line_count, M, P, array_temp_a, array_temp_b, array_c);
-	std::cout << " kernelMatrixmult has completed " << std::endl;
+	//std::cout << " kernelMatrixmult has completed " << std::endl;
 
 }
 
@@ -160,15 +160,15 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
     for (int i = 0; i < SM; i++) {    
         for (int j = 0; j < SP; j++) {
         	B[i * SP + j] =  0x01;
-		std::cout << "B "<< i * SP + j << " " << B[i * SP + j] << std::endl;
+		//std::cout << "B "<< i * SP + j << " " << B[i * SP + j] << std::endl;
         }
     }
     for (int i = 0; i < SN; i++) {
         for (int j = 0; j < SP; j++) {
 			C_sw[i * SP + j] = 0;
 			C[i * SP + j] = 0;
-		std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
-		std::cout << "C "<< i * SP + j << " " << C[i * SP + j] << std::endl;
+		//std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
+		//std::cout << "C "<< i * SP + j << " " << C[i * SP + j] << std::endl;
 		}
 	}
 }
@@ -359,7 +359,7 @@ static void load_arrays_byte(DTYPE *A,std::ifstream& myFile)
 	        }
 	        A[i * SM + j] = array_val;
 	        val_count++;
-	        std::cout << i << " " << j << " " << A[i * SM + j] << std::endl;
+	        //std::cout << i << " " << j << " " << A[i * SM + j] << std::endl;
 	    }
     }
     std::cout << "(BYTE) Val count " << val_count << std::endl;
@@ -430,7 +430,7 @@ void mmult_golden_byte(DTYPE *A,  DTYPE *B, DTYPE_OUT *C)
 				}
 			}
 			C[row*SP+col] = result;
-			std::cout << row << " " << col << " "<< C[row*SP+col] << std::endl;
+			//std::cout << row << " " << col << " "<< C[row*SP+col] << std::endl;
 		}
 	}
 }
@@ -441,7 +441,7 @@ static int result_check(DTYPE_OUT *C, DTYPE_OUT *C_sw)
 		if (C_sw[i] != C[i]) {
 			std::cout 	<< "Mismatch: data index= " << i << " golden = " << C_sw[i]
 						<< ", kernel = " << C[i] << std::endl;
-			//return 1;
+			return 1;
 		}
 	}
     std::cout 	<< "TEST PASSED !" <<  std::endl;
@@ -587,6 +587,12 @@ int main(int argc, char* argv[]) {
 	SM = atoi(argv[4]);
     SP = atoi(argv[5]);
     SN = atoi(argv[6]);
+	
+	if(SP < B_WIDTH_BLOCK)
+	{
+		std::cout << "Error : P is less than (B_WIDTH_BLOCK = 32), kernel cannot be executed successfully.";
+		return EXIT_FAILURE;
+	}
 
 	ap_uint<2> S_ternary = atoi(argv[3]);
 	int S_begin = 0;
