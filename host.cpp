@@ -7,7 +7,7 @@
 #include "xcl2.hpp"
 #include <CL/cl.h>
 #include <CL/cl2.hpp>
-#include "matrix_mult.h"
+#include "kernelMatrixmult.h"
 
 //2022.07.05 13:36
 
