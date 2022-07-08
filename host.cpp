@@ -463,14 +463,16 @@ int main(int argc, char* argv[]) {
     OCL_CHECK(err, cl::Buffer buffer_array_a(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * SM * sizeof(DTYPE), NULL, &err));
     OCL_CHECK(err, cl::Buffer buffer_array_b(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SM * SP * sizeof(DTYPE), NULL, &err));
     OCL_CHECK(err, cl::Buffer buffer_array_c(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * SP * sizeof(DTYPE_OUT), NULL, &err));
+	
 
 	// For buffer buffer_array_c_sw, since we aren't using it for a kernel we'll specify the bank allocation
+	/*
     cl_mem_ext_ptr_t bank_ext;
     bank_ext.flags = 0 | XCL_MEM_TOPOLOGY;
     bank_ext.obj   = NULL;
     bank_ext.param = 0;
 	OCL_CHECK(err, cl::Buffer buffer_array_c_sw(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR | CL_MEM_EXT_PTR_XILINX, SN * SP * sizeof(DTYPE_OUT), &bank_ext, &err));
-
+	*/
 	ap_uint<2> S_ternary = atoi(argv[3]);
 	int S_begin = 0;
 	int S_end = SN;
@@ -492,13 +494,13 @@ int main(int argc, char* argv[]) {
     DTYPE* array_a;
     DTYPE* array_b;
     DTYPE_OUT* array_c;
-    DTYPE_OUT* array_c_sw;
+    DTYPE_OUT* array_c_sw = new DTYPE_OUT[SN * SP];
     
 	//Map buffers to userspace pointers
     OCL_CHECK(err, array_a = (DTYPE*)q.enqueueMapBuffer(buffer_array_a, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
     OCL_CHECK(err, array_b = (DTYPE*)q.enqueueMapBuffer(buffer_array_b, CL_TRUE, CL_MAP_WRITE, 0, SM * SP * sizeof(DTYPE), nullptr, nullptr, &err));
 	OCL_CHECK(err, array_c = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c, CL_TRUE, CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
-	OCL_CHECK(err, array_c_sw = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c_sw, CL_TRUE, CL_MAP_WRITE | CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
+	//OCL_CHECK(err, array_c_sw = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c_sw, CL_TRUE, CL_MAP_WRITE | CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
 
 	//start host and kernel function
     init_arrays(array_b, array_c_sw, array_c);
@@ -565,6 +567,6 @@ int main(int argc, char* argv[]) {
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_a, array_a));
     OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_b, array_b));
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_c, array_c));
-	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_c_sw, array_c_sw));
+	//OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_c_sw, array_c_sw));
 	q.finish();
 }
