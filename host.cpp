@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
-//#include <sys/time.h>
+#include <chrono>
 #include <algorithm>
 
 #include "xcl2.hpp"
@@ -13,6 +13,13 @@
 
 #define NUM_TESTS 1
 
+#define OCL_CHECK(error, call)                                                                   \
+    call;                                                                                        \
+    if (error != CL_SUCCESS) {                                                                   \
+        printf("%s:%d Error calling " #call ", error code is: %d\n", __FILE__, __LINE__, error); \
+        exit(EXIT_FAILURE);                                                                      \
+    }
+
 int SN, SM, SP;
 
 static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
@@ -20,15 +27,12 @@ static void init_arrays(DTYPE *B, DTYPE_OUT *C_sw, DTYPE_OUT *C)
     for (int i = 0; i < SM; i++) {    
         for (int j = 0; j < SP; j++) {
         	B[i * SP + j] =  0x01;
-		//std::cout << "B "<< i * SP + j << " " << B[i * SP + j] << std::endl;
         }
     }
     for (int i = 0; i < SN; i++) {
         for (int j = 0; j < SP; j++) {
 			C_sw[i * SP + j] = 0;
 			C[i * SP + j] = 0;
-		//std::cout << "C_sw "<< i * SP + j << " " << C_sw[i * SP + j] << std::endl;
-		//std::cout << "C "<< i * SP + j << " " << C[i * SP + j] << std::endl;
 		}
 	}
 }
@@ -210,16 +214,13 @@ static void load_arrays_byte(DTYPE *A,std::ifstream& myFile)
 	        {
 	        	// Extract each integer
 	        	ss >> val;
-			//std::cout << "val = "<< val << std::endl;
 	        	array_val = (array_val << 8) + val;
-			//std::cout << "current array_val = "<< array_val << std::endl;
 
 	            // If the next token is a comma, ignore it and move on
 	            if(ss.peek() == ',') ss.ignore();
 	        }
 	        A[i * SM + j] = array_val;
 	        val_count++;
-	        //std::cout << i << " " << j << " " << A[i * SM + j] << std::endl;
 	    }
     }
     std::cout << "(BYTE) Val count " << val_count << std::endl;
@@ -239,7 +240,6 @@ void mmult_golden_ternary(DTYPE *A,  DTYPE *B, DTYPE_OUT *C)
 					switch(A_temp)
 					{
 						case 0:
-							//std::cout << "C golden is" << result << std::endl;
 							break;
 						case 1:
 							B_temp = B[k*SP+col].range(z+1,z);
@@ -290,7 +290,6 @@ void mmult_golden_byte(DTYPE *A,  DTYPE *B, DTYPE_OUT *C)
 				}
 			}
 			C[row*SP+col] = result;
-			//std::cout << row << " " << col << " "<< C[row*SP+col] << std::endl;
 		}
 	}
 }
@@ -308,67 +307,7 @@ static int result_check(DTYPE_OUT *C, DTYPE_OUT *C_sw)
 	return 0;
 }
 
-void printVector(const vi& V, char* msg)
-{
-
-	std::cout << msg << "[ ";
-	for_each(V.begin(), V.end(), [](int a) {
-		std::cout << a << " ";
-	});
-	std::cout << "]" << std::endl;
-}
-
-// Generate the three vectors A, IA, JA
-void arraytocsr(DTYPE *V)
-{
-	int i, j;
-	vi A;
-	vi IA = { 0 }; // IA matrix has N+1 rows
-	vi JA;
-	int NNZ = 0;
-
-	// Create an outuptu filestream
-	std::ofstream outFile("/mnt/weights.csr");
-
-	// Make sure the file is open
-	if(!outFile.is_open()) throw std::runtime_error("Could not open csr file");
-	for (i = 0; i < SN; i++) {
-		for (j = 0; j < SM; j++) {
-			if (V[i*SM+j] != 0) {
-				A.push_back(V[i*SM+j]);
-				JA.push_back(j);
-				// Count Number of Non Zero
-				// Elements in row i
-				NNZ++;
-			}
-		}
-		IA.push_back(NNZ);
-	}
-
-	outFile << SN << " " << SM << " " << NNZ << std::endl;
-
-	for(int i=0;i<A.size();i++)
-	{
-		outFile << JA[i] << " " << A[i] << std::endl;
-	}
-
-	for(int i=0;i<IA.size();i++)
-	{
-		outFile << IA[i] << std::endl;
-	}
-
-	outFile.close();
-	std::cout << "Number of non-zeros " << NNZ << std::endl;
-}
-
-#define OCL_CHECK(error, call)                                                                   \
-    call;                                                                                        \
-    if (error != CL_SUCCESS) {                                                                   \
-        printf("%s:%d Error calling " #call ", error code is: %d\n", __FILE__, __LINE__, error); \
-        exit(EXIT_FAILURE);                                                                      \
-    }
-
-// MAIN
+// main
 int main(int argc, char* argv[]) {
     if (argc != 7) {
         std::cout << "Usage: " << argv[0] << " <xclbin>" << " myFile" << " ternary" << " SM" << " SP" << " SN" << std::endl;
@@ -385,7 +324,7 @@ int main(int argc, char* argv[]) {
     std::vector<cl::Platform> platforms;
     bool found_device = false;
 
-    // traversing all Platforms To find Xilinx Platform and targeted
+    // Traversing all Platforms To find Xilinx Platform and targeted
     // Device in Xilinx Platform
     cl::Platform::get(&platforms);
     for (size_t i = 0; (i < platforms.size()) & (found_device == false); i++) {
@@ -464,20 +403,9 @@ int main(int argc, char* argv[]) {
     OCL_CHECK(err, cl::Buffer buffer_array_b(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SM * SP * sizeof(DTYPE), NULL, &err));
     OCL_CHECK(err, cl::Buffer buffer_array_c(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * SP * sizeof(DTYPE_OUT), NULL, &err));
 	
-
-	// For buffer buffer_array_c_sw, since we aren't using it for a kernel we'll specify the bank allocation
-	/*
-    cl_mem_ext_ptr_t bank_ext;
-    bank_ext.flags = 0 | XCL_MEM_TOPOLOGY;
-    bank_ext.obj   = NULL;
-    bank_ext.param = 0;
-	OCL_CHECK(err, cl::Buffer buffer_array_c_sw(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR | CL_MEM_EXT_PTR_XILINX, SN * SP * sizeof(DTYPE_OUT), &bank_ext, &err));
-	*/
 	ap_uint<2> S_ternary = atoi(argv[3]);
 	int S_begin = 0;
 	int S_end = SN;
-
-	std::cout << "Complete to assign a value to begin and end " << std::endl;
 
 	// Set the kernal argument
     int narg = 0;
@@ -500,12 +428,11 @@ int main(int argc, char* argv[]) {
     OCL_CHECK(err, array_a = (DTYPE*)q.enqueueMapBuffer(buffer_array_a, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
     OCL_CHECK(err, array_b = (DTYPE*)q.enqueueMapBuffer(buffer_array_b, CL_TRUE, CL_MAP_WRITE, 0, SM * SP * sizeof(DTYPE), nullptr, nullptr, &err));
 	OCL_CHECK(err, array_c = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c, CL_TRUE, CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
-	//OCL_CHECK(err, array_c_sw = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_array_c_sw, CL_TRUE, CL_MAP_WRITE | CL_MAP_READ, 0, SN * SP * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
 
 	//start host and kernel function
     init_arrays(array_b, array_c_sw, array_c);
 	    
-    std::cout << "Complete to init_arrays " << std::endl;
+    std::cout << "Complete : Init_arrays." << std::endl;
 
     for (int i = 0; i < NUM_TESTS; i++) 
 	{
@@ -523,9 +450,11 @@ int main(int argc, char* argv[]) {
 			load_arrays_quad(array_a,myFile);
 		}
 	    
-	    std::cout << "Complete to load_arrays " << std::endl;
+	    std::cout << "Complete : Load_arrays." << std::endl;
     }
-
+	
+	std::cout << "Start : Kernel execution." << std::endl;
+	auto fpga_begin = std::chrono::high_resolution_clock::now();
     // Date will be migrate to the kernal space
 	OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_a, buffer_array_b}, 0));
     
@@ -542,9 +471,12 @@ int main(int argc, char* argv[]) {
     OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_c}, CL_MIGRATE_MEM_OBJECT_HOST));
     
     q.finish();
+	auto fpga_end = std::chrono::high_resolution_clock::now();
+	std::cout << "Complete : Kernel execution." << std::endl;
 
     // Compare the results of the Device to the simulation
-    std::cout << "Start to mmult_golden " << std::endl;
+    std::cout << "Start : mmult_golden." << std::endl;
+	auto cpu_begin = std::chrono::high_resolution_clock::now();
 	
     if (S_ternary==0)
     {
@@ -559,10 +491,19 @@ int main(int argc, char* argv[]) {
         mmult_golden_quad(array_a, array_b, array_c_sw);
     }
 	
-    std::cout << "Complete to mmult_golden " << std::endl;
+	auto cpu_end = std::chrono::high_resolution_clock::now();
+    std::cout << "Complete : mmult_golden." << std::endl;
+	std::cout << "Start : result_check." << std::endl;
 
     if (result_check(array_c, array_c_sw))
         return 1;
+	
+	std::chrono::duration<double> fpga_duration = fpga_end - fpga_begin;
+	std::chrono::duration<double> cpu_duration = cpu_begin - cpu_end;
+	
+	
+	
+	
     
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_a, array_a));
     OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_b, array_b));
