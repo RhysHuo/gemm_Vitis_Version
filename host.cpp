@@ -500,14 +500,21 @@ int main(int argc, char* argv[]) {
 	
 	std::chrono::duration<double> fpga_duration = fpga_end - fpga_begin;
 	std::chrono::duration<double> cpu_duration = cpu_begin - cpu_end;
+	//float fpga_throughput = (double) numRuns*3*nbytes / fpga_duration.count() / (1024.0*1024.0);
+     	//float cpu_throughput  = (double) numRuns*3*nbytes / cpu_duration.count() / (1024.0*1024.0);
 	
-	
-	
-	
-    
+	std::cout << std::endl;
+	std::cout << "         Performance  " << std::endl;
+    	//std::cout << "          Total data: " << total << " MBits" << std::endl;
+    	std::cout << "           FPGA Time: " << fpga_duration.count() << " s" << std::endl;
+    	//std::cout << "     FPGA Throughput: " << total / fpga_duration.count() << " MBits/s" << std::endl;
+    	//std::cout << "FPGA PCIe Throughput: " << (2*total) / fpga_duration.count() << " MBits/s" << std::endl;
+	std::cout << "            CPU Time: " << cpu_duration.count() << " s" << std::endl;
+	std::cout << "       FPGA Speedup : " << cpu_duration.count() / fpga_duration.count() << " x" << std::endl;
+	std::cout << "----------------------------------------------------------------------------"   << std::endl;
+	 
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_a, array_a));
     OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_b, array_b));
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_c, array_c));
-	//OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_c_sw, array_c_sw));
 	q.finish();
 }
