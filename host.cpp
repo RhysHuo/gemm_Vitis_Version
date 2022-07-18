@@ -504,6 +504,7 @@ int main(int argc, char* argv[]) {
      	//float cpu_throughput  = (double) numRuns*3*nbytes / cpu_duration.count() / (1024.0*1024.0);
 	
 	std::cout << std::endl;
+	std::cout << "----------------------------------------------------------------------------"   << std::endl;
 	std::cout << "         Performance  " << std::endl;
     	//std::cout << "          Total data: " << total << " MBits" << std::endl;
     	std::cout << "           FPGA Time: " << fpga_duration.count() * 1000.0 << " ms" << std::endl;
