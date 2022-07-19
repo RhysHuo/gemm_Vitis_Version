@@ -498,6 +498,9 @@ int main(int argc, char* argv[]) {
     if (result_check(array_c, array_c_sw))
         return 1;
 	
+	for(int k = 0; k < 50; k++)
+		std::cout << "array_c_sw = " << k << " " << array_c_sw[k] << std::endl;
+	
 	std::chrono::duration<double> fpga_duration = fpga_end - fpga_begin;
 	std::chrono::duration<double> cpu_duration = cpu_end - cpu_begin;
 	//float fpga_throughput = (double) numRuns*3*nbytes / fpga_duration.count() / (1024.0*1024.0);
