@@ -498,8 +498,8 @@ int main(int argc, char* argv[]) {
     if (result_check(array_c, array_c_sw))
         return 1;
 	
-	for(int k = 0; k < 64; k++)
-		std::cout << "array_a = " << k << array_a[k] << std::endl;
+	for(int k = 0; k < 256; k++)
+		std::cout << "array_a = " << k << " " << array_a[k] << std::endl;
 	
 	
 	for(int k = 0; k < 64; k++)
