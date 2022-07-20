@@ -503,7 +503,7 @@ int main(int argc, char* argv[]) {
 	
 	
 	for(int k = 0; k < 64; k++)
-		std::cout << "array_c_sw = " << k << " " << array_c_sw[k] << std::endl;
+		std::cout << "array_c = " << k << " " << array_c[k] << std::endl;
 	
 	std::chrono::duration<double> fpga_duration = fpga_end - fpga_begin;
 	std::chrono::duration<double> cpu_duration = cpu_end - cpu_begin;
